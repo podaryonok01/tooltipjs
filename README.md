@@ -1,3 +1,6 @@
+# TOOLTIPJS
+##### A simple library that creates custom tooltips on elements.
+## Usage
 ### Add JS
 ####
 Either
