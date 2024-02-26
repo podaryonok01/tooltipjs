@@ -1,12 +1,25 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": true,
-        "outDir": "./lib",
-        "strict": true,
-        "sourceMap": true,
+      "esModuleInterop": true,
+      "outDir": "dist",
+      "target": "es6",
+      "lib": ["es2015", "dom", "es2017"],
+      "sourceMap": true,
+      "allowJs": false,
+      "declaration": true,
+      "downlevelIteration": true,
+      "skipLibCheck": true,
+      "module": "commonjs",
+      "forceConsistentCasingInFileNames": true,
+      "noImplicitReturns": true,
+      "noImplicitThis": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "typeRoots": ["./@types"]
     },
-    "include": ["src"],
-    "exclude": ["node_modules", "**/__tests__/*"]
+    "include": ["src", "./types/*.d.ts"],
+    "exclude": ["node_modules", "build", "dist", "example"]
   }
+  

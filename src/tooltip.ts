@@ -1,7 +1,7 @@
 import { TOOLTIP_CLASS } from "./constants";
 import { getScroll, isNotEmptyAttr } from "./functions";
 import { IDiseredPosition, IPossibleSides, ISettings } from "./types";
-import "../lib/tooltip.css"
+import "./tooltip.scss";
 
 class Tooltip {
     private settings: ISettings;
@@ -19,7 +19,7 @@ class Tooltip {
         this.createTooltipElement();
     }
 
-    createTooltipElement() {
+    private createTooltipElement() {
         const tooltip = document.createElement("div");
         tooltip.classList.add(TOOLTIP_CLASS, this.settings.className);
         this.tooltip = tooltip;
@@ -27,21 +27,22 @@ class Tooltip {
         this.subscribe(true);
     }
 
-    onRemoveTooltip = () => {
+    public removeTooltip = () => {
+        this.subscribe(false);
         this.tooltip.remove();
     }
 
-    subscribe(mtd: boolean){
+    private subscribe(mtd: boolean){
         if(mtd){
             this.settings.rootElement.addEventListener("mouseover", this.onMouseMove);
-            this.settings.rootElement.addEventListener("remove", this.onRemoveTooltip);
         }else{
             this.settings.rootElement.removeEventListener("mouseover", this.onMouseMove);
-            this.settings.rootElement.removeEventListener("remove", this.onRemoveTooltip);
+            this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
+
         }
     }
 
-    onMouseMove = (event: MouseEvent) => {
+    private onMouseMove = (event: MouseEvent) => {
         const el = event.target as HTMLElement;
         if(isNotEmptyAttr(el,"title") || isNotEmptyAttr(el,"data-tooltip")){
             this.targetElement = el;
@@ -52,7 +53,7 @@ class Tooltip {
         }
     }
 
-    addTooltipData(){
+    private addTooltipData(){
         if(!this.targetElement){
             return;
         }
@@ -67,7 +68,7 @@ class Tooltip {
         
     }
 
-    addTooltip(){
+    private addTooltip(){
         if(!this.targetElement){
             return;
         }
@@ -76,7 +77,7 @@ class Tooltip {
         this.showTooltip();
     }
 
-    onHideTooltip = () => {
+    private onHideTooltip = () => {
         const visibilityClass = `${TOOLTIP_CLASS}--visible`;
         
         if (this.tooltip.classList.contains(visibilityClass)) {
@@ -84,9 +85,10 @@ class Tooltip {
             this.tooltip.removeAttribute("style");
             this.resetClass();
         }
+        this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
     }
 
-    showTooltip() {
+    private showTooltip() {
         
         const visibilityClass = `${TOOLTIP_CLASS}--visible`;
     
@@ -95,7 +97,7 @@ class Tooltip {
         }
     }
 
-    setTooltipPosition() {
+    private setTooltipPosition() {
         if(!this.targetElement){
             return;
         }
@@ -116,16 +118,16 @@ class Tooltip {
       
     }
 
-    setClass(tooltipPosition: string) {
+    private setClass(tooltipPosition: string) {
         this.tooltip.classList.add(`${TOOLTIP_CLASS}--${tooltipPosition}`);
     }
 
-    resetClass() {
+    private resetClass() {
         this.tooltip.removeAttribute("class");
         this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className);
     }
 
-    getDesiredPosition(element: HTMLElement): IDiseredPosition | undefined {
+    private  getDesiredPosition(element: HTMLElement): IDiseredPosition | undefined {
         const posSplit = element.dataset.position?.split("-");
     
         if(!posSplit){
@@ -143,14 +145,14 @@ class Tooltip {
         };
     }
 
-    getPossibleSides(elementBounding: DOMRect): IPossibleSides {
+    private getPossibleSides(elementBounding: DOMRect): IPossibleSides {
         return  {
             vertical: this.checkVerticalSpace(elementBounding),
             horizontal: this.checkHorizontalSpace(elementBounding)
         }
     }
 
-    calcCoordinates(elementRect: DOMRect, position: IDiseredPosition | undefined) {
+    private calcCoordinates(elementRect: DOMRect, position: IDiseredPosition | undefined) {
 
         const tooltipBounding = this.tooltip.getBoundingClientRect();
         const elementBounding = elementRect;
@@ -213,7 +215,7 @@ class Tooltip {
         return coordinates;
     }
 
-    checkVerticalSpace(elementBounding: DOMRect) {
+    private checkVerticalSpace(elementBounding: DOMRect) {
       const topSpace = (elementBounding.top - this.settings.margin);
       const bottomSpace = window.innerHeight - (elementBounding.bottom + this.settings.margin);
   
@@ -223,7 +225,7 @@ class Tooltip {
       };
     }
   
-    checkHorizontalSpace(elementBounding: DOMRect) {
+    private checkHorizontalSpace(elementBounding: DOMRect) {
       const leftSpace = (elementBounding.left - this.settings.margin);
       const rightSpace = window.innerWidth - (elementBounding.right + this.settings.margin);
   
@@ -233,71 +235,71 @@ class Tooltip {
       };
     }
 
-    getActualPosition(desired: IDiseredPosition, possible: IPossibleSides): IDiseredPosition {
-        const positionMap = {
-          top: "start",
-          bottom: "end",
-          left: "start",
-          right: "end",
-        };
+    private getActualPosition(desired: IDiseredPosition, possible: IPossibleSides): IDiseredPosition {
+      const positionMap = {
+        top: "start",
+        bottom: "end",
+        left: "start",
+        right: "end",
+      };
     
-        const oppositeMap = {
-          top: "bottom",
-          bottom: "top",
-          left: "right",
-          right: "left",
-          vertical: "horizontal",
-          horizontal: "vertical",
-        };
+      const oppositeMap = {
+        top: "bottom",
+        bottom: "top",
+        left: "right",
+        right: "left",
+        vertical: "horizontal",
+        horizontal: "vertical",
+      };
     
-        const axis = (
-          desired.side === "top" || desired.side === "bottom"
-        ) ? "vertical" : "horizontal";
-    
-        const getSide = (wantedAxis: string, wantedSide: string): string => {
+      const axis = (
+        desired.side === "top" || desired.side === "bottom"
+      ) ? "vertical" : "horizontal";
+  
+      const getSide = (wantedAxis: string, wantedSide: string): string => {
+        // @ts-ignore
+        const theAxis = possible[wantedAxis];
+        let side;
+  
+        // @ts-ignore
+        if (theAxis[positionMap[wantedSide]]) {
+          side = wantedSide;
           // @ts-ignore
-          const theAxis = possible[wantedAxis];
-          let side;
-    
+        } else if (theAxis[positionMap[oppositeMap[wantedSide]]]) {
           // @ts-ignore
-          if (theAxis[positionMap[wantedSide]]) {
-            side = wantedSide;
-            // @ts-ignore
-          } else if (theAxis[positionMap[oppositeMap[wantedSide]]]) {
-            // @ts-ignore
-            side = oppositeMap[wantedSide];
-          } else {
-            // @ts-ignore
-            side = getSide(oppositeMap[wantedAxis], wantedSide);
-          }
-    
-          return side;
-        };
-    
-        const getAlignment = (wantedAxis: string, wantedAlignment: string|undefined) => {
+          side = oppositeMap[wantedSide];
+        } else {
           // @ts-ignore
-          const possibleAlign = possible[wantedAxis];
-          
-          let alignment;
-    
-          if (possibleAlign.start && possibleAlign.end) {
-            alignment = wantedAlignment;
-          } else if (!possibleAlign.start && !possibleAlign.end) {
-            alignment = "center";
-          } else if (!possibleAlign.start) {
-            alignment = "start";
-          } else if (!possibleAlign.end) {
-            alignment = "end";
-          }
-    
-          return alignment;
-        };
-    
-        return {
-          side: getSide(axis, desired.side),
-          alignment: getAlignment(oppositeMap[axis], desired.alignment)
-        };
-      }
+          side = getSide(oppositeMap[wantedAxis], wantedSide);
+        }
+  
+        return side;
+      };
+  
+      const getAlignment = (wantedAxis: string, wantedAlignment: string|undefined) => {
+        // @ts-ignore
+        const possibleAlign = possible[wantedAxis];
+        
+        let alignment;
+  
+        if (possibleAlign.start && possibleAlign.end) {
+          alignment = wantedAlignment;
+        } else if (!possibleAlign.start && !possibleAlign.end) {
+          alignment = "center";
+        } else if (!possibleAlign.start) {
+          alignment = "start";
+        } else if (!possibleAlign.end) {
+          alignment = "end";
+        }
+  
+        return alignment;
+      };
+  
+      return {
+        side: getSide(axis, desired.side),
+        alignment: getAlignment(oppositeMap[axis], desired.alignment)
+      };
+    }
 
 }
 
