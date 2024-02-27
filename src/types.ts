@@ -4,10 +4,10 @@ type POSITION_TYPE = "top" | "top-start" | "top-center" | "top-end"
     | "right-start" | "right-center" | "right-end";
 
 export interface ISettings {
-    rootElement: HTMLElement;
-    className: string;
-    position: POSITION_TYPE;
-    margin: number;
+    rootElement?: HTMLElement;
+    className?: string;
+    position?: POSITION_TYPE;
+    margin?: number;
 }
 
 export interface IPossibleSides{

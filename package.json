@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "jest",
     "build": "npm run build:types && npm run build:js",
     "build:types": "tsc --emitDeclarationOnly",
     "build:js": "webpack",
+    "prepare": "npm run build",
     "watch-tsc": "tsc -w",
     "watch": "webpack --watch --progress",
     "start": "webpack-dev-server --progress --colors --host 0.0.0.0 --content-base app/ --config webpack.config.js",

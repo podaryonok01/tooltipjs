@@ -7,23 +7,33 @@ class Tooltip {
     private settings: ISettings;
     private tooltip!: HTMLDivElement;
     private targetElement: HTMLElement|undefined;
-    constructor(options = {}) {
+    constructor(options:ISettings = {}) {
         this.settings = {
           rootElement: document.body,
-          className: "tooltip",
           position: "top-center",
           margin: 10
         };
-  
-        this.settings = Object.assign(this.settings, options);
+        Object.keys(options).forEach((option: keyof ISettings) => {
+          if(options[option]){
+            // @ts-ignore
+            this.settings[option] = options[option];
+          }
+        });
         this.createTooltipElement();
     }
 
     private createTooltipElement() {
+        const tooltipEl = document.querySelector(".tooltip");
+        if(tooltipEl && tooltipEl.tagName === "DIV"){
+          this.tooltip = tooltipEl as HTMLDivElement;
+          this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
+          this.subscribe(true);
+          return;
+        }
         const tooltip = document.createElement("div");
-        tooltip.classList.add(TOOLTIP_CLASS, this.settings.className);
+        tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
         this.tooltip = tooltip;
-        this.settings.rootElement.appendChild(this.tooltip);
+        document.body.appendChild(this.tooltip);
         this.subscribe(true);
     }
 
@@ -34,11 +44,11 @@ class Tooltip {
 
     private subscribe(mtd: boolean){
         if(mtd){
-            this.settings.rootElement.addEventListener("mouseover", this.onMouseMove);
+            this.settings.rootElement?.addEventListener("mouseover", this.onMouseMove);
         }else{
-            this.settings.rootElement.removeEventListener("mouseover", this.onMouseMove);
-            this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
-
+            this.settings.rootElement?.removeEventListener("mouseover", this.onMouseMove);
+            // this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
+            this.targetElement?.removeEventListener("mouseleave", this.onHideTooltip);
         }
     }
 
@@ -46,10 +56,14 @@ class Tooltip {
         const el = event.target as HTMLElement;
         if(isNotEmptyAttr(el,"title") || isNotEmptyAttr(el,"data-tooltip")){
             this.targetElement = el;
-            this.targetElement.addEventListener("mouseout", this.onHideTooltip);
+            // this.targetElement.addEventListener("mouseout", this.onHideTooltip);
+            this.targetElement.addEventListener("mouseleave", this.onHideTooltip);
+
 
             this.addTooltipData();
             this.addTooltip();
+        }else{
+          this.onHideTooltip();
         }
     }
 
@@ -124,7 +138,7 @@ class Tooltip {
 
     private resetClass() {
         this.tooltip.removeAttribute("class");
-        this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className);
+        this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
     }
 
     private  getDesiredPosition(element: HTMLElement): IDiseredPosition | undefined {
@@ -179,11 +193,11 @@ class Tooltip {
         }
     
         if (position.side === "top") {
-            coordinates.y += (elementBounding.top - tooltipBounding.height - this.settings.margin);
+            coordinates.y += (elementBounding.top - tooltipBounding.height - (this.settings.margin || 0));
         }
     
         if (position.side === "bottom") {
-            coordinates.y += (elementBounding.bottom + this.settings.margin);
+            coordinates.y += (elementBounding.bottom + (this.settings.margin || 0));
         }
     
         // left & right
@@ -205,19 +219,19 @@ class Tooltip {
         }
     
         if (position.side === "left") {
-            coordinates.x += (elementBounding.left - this.settings.margin - tooltipBounding.width);
+            coordinates.x += (elementBounding.left - (this.settings.margin || 0) - tooltipBounding.width);
         }
     
         if (position.side === "right") {
-            coordinates.x += (elementBounding.right + this.settings.margin);
+            coordinates.x += (elementBounding.right + (this.settings.margin || 0));
         }
     
         return coordinates;
     }
 
     private checkVerticalSpace(elementBounding: DOMRect) {
-      const topSpace = (elementBounding.top - this.settings.margin);
-      const bottomSpace = window.innerHeight - (elementBounding.bottom + this.settings.margin);
+      const topSpace = (elementBounding.top - (this.settings.margin || 0));
+      const bottomSpace = window.innerHeight - (elementBounding.bottom + (this.settings.margin || 0));
   
       return {
         start: topSpace > this.tooltip.offsetHeight,
@@ -226,8 +240,8 @@ class Tooltip {
     }
   
     private checkHorizontalSpace(elementBounding: DOMRect) {
-      const leftSpace = (elementBounding.left - this.settings.margin);
-      const rightSpace = window.innerWidth - (elementBounding.right + this.settings.margin);
+      const leftSpace = (elementBounding.left - (this.settings.margin || 0));
+      const rightSpace = window.innerWidth - (elementBounding.right + (this.settings.margin || 0));
   
       return {
         start: leftSpace > this.tooltip.offsetWidth,
