@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": false,
+  "keywords": ["tooltip"],
   "scripts": {
     "test": "jest",
     "build": "npm run build:types && npm run build:js",
@@ -20,6 +19,12 @@
     "codestyle": "npm run prettier && npm run tslint"
   },
   "author": "Darya Melnikova",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/podaryonok01/tooltipjs"
+  },
+  "homepage": "https://github.com/podaryonok01/tooltipjs#readme",
+  "bugs": "https://github.com/podaryonok01/tooltipjs/issues",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "7.18.5",
