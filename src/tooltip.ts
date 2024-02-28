@@ -10,6 +10,7 @@ class Tooltip {
     constructor(options:ISettings = {}) {
         this.settings = {
           rootElement: document.body,
+          className: TOOLTIP_CLASS,
           position: "top-center",
           margin: 10
         };
@@ -20,18 +21,24 @@ class Tooltip {
           }
         });
         this.createTooltipElement();
+
+        const observer = new MutationObserver(this.checkIsTargetElement);
+        observer.observe(this.settings.rootElement!, {
+          subtree: true,
+          childList: true
+        });
     }
 
     private createTooltipElement() {
         const tooltipEl = document.querySelector(".tooltip");
         if(tooltipEl && tooltipEl.tagName === "DIV"){
           this.tooltip = tooltipEl as HTMLDivElement;
-          this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
+          this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className!);
           this.subscribe(true);
           return;
         }
         const tooltip = document.createElement("div");
-        tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
+        tooltip.classList.add(TOOLTIP_CLASS, this.settings.className!);
         this.tooltip = tooltip;
         document.body.appendChild(this.tooltip);
         this.subscribe(true);
@@ -44,27 +51,40 @@ class Tooltip {
 
     private subscribe(mtd: boolean){
         if(mtd){
-            this.settings.rootElement?.addEventListener("mouseover", this.onMouseMove);
+            this.settings.rootElement?.addEventListener("mousemove", this.onMouseMove);
         }else{
-            this.settings.rootElement?.removeEventListener("mouseover", this.onMouseMove);
-            // this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
+            this.settings.rootElement?.removeEventListener("mousemove", this.onMouseMove);
+            this.targetElement?.removeEventListener("mouseenter", this.onMouseEnterTargetElement)
             this.targetElement?.removeEventListener("mouseleave", this.onHideTooltip);
         }
     }
 
-    private onMouseMove = (event: MouseEvent) => {
+    private checkIsTargetElement = () => {
+      if(!this.targetElement || !document.body.contains(this.targetElement)){
+        this.onHideTooltip();
+      }
+    }
+
+    private onMouseMove = (event: MouseEvent | {target: HTMLElement}) => {
         const el = event.target as HTMLElement;
         if(isNotEmptyAttr(el,"title") || isNotEmptyAttr(el,"data-tooltip")){
+            // отписка для предыдущего targetElement
+            this.targetElement?.removeEventListener("mouseenter", this.onMouseEnterTargetElement)
+            this.targetElement?.removeEventListener("mouseleave", this.onHideTooltip);
+
             this.targetElement = el;
-            // this.targetElement.addEventListener("mouseout", this.onHideTooltip);
+            // подписка для текущего targetElement
+            this.targetElement.addEventListener("mouseenter", this.onMouseEnterTargetElement)
             this.targetElement.addEventListener("mouseleave", this.onHideTooltip);
-
-
-            this.addTooltipData();
-            this.addTooltip();
-        }else{
-          this.onHideTooltip();
+            this.onMouseEnterTargetElement();
+        }else if(el.parentElement){
+          this.onMouseMove({target: el.parentElement})
         }
+    }
+
+    private onMouseEnterTargetElement = () => {
+      this.addTooltipData();
+      this.addTooltip();
     }
 
     private addTooltipData(){
@@ -99,7 +119,8 @@ class Tooltip {
             this.tooltip.removeAttribute("style");
             this.resetClass();
         }
-        this.targetElement?.removeEventListener("mouseout", this.onHideTooltip);
+        this.targetElement?.removeEventListener("mouseleave", this.onHideTooltip);
+        this.targetElement?.removeEventListener("mouseenter", this.onMouseEnterTargetElement)
     }
 
     private showTooltip() {
@@ -138,7 +159,7 @@ class Tooltip {
 
     private resetClass() {
         this.tooltip.removeAttribute("class");
-        this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className || "");
+        this.tooltip.classList.add(TOOLTIP_CLASS, this.settings.className!);
     }
 
     private  getDesiredPosition(element: HTMLElement): IDiseredPosition | undefined {
