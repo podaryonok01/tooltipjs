@@ -3,6 +3,8 @@ import { getScroll, isNotEmptyAttr } from "./functions";
 import { IDiseredPosition, IPossibleSides, ISettings } from "./types";
 import "./tooltip.scss";
 
+const deltaOffsetBeforeElement = 15;
+
 class Tooltip {
     private settings: ISettings;
     private tooltip!: HTMLDivElement;
@@ -139,6 +141,7 @@ class Tooltip {
         const elementRect = this.targetElement.getBoundingClientRect();
         const desiredPosition = this.getDesiredPosition(this.targetElement);
         const possibleSides = this.getPossibleSides(elementRect);
+        console.log("possibleSides", possibleSides)
         const actualPosition = desiredPosition && possibleSides ? this.getActualPosition(desiredPosition, possibleSides) : undefined;
         const coordinates = this.calcCoordinates(elementRect, actualPosition);
     
@@ -199,7 +202,8 @@ class Tooltip {
     
         if ((position.side === "top" || position.side === "bottom")) {
             if (position.alignment === "start") {
-            coordinates.x += elementBounding.left;
+              coordinates.x += (elementBounding.left - 
+                (elementBounding.width < deltaOffsetBeforeElement * 2 ? deltaOffsetBeforeElement - elementBounding.width / 2 : 0));
             }
     
             if (position.alignment === "center") {
@@ -209,7 +213,8 @@ class Tooltip {
             }
     
             if (position.alignment === "end") {
-            coordinates.x += (elementBounding.right - tooltipBounding.width);
+              coordinates.x += (elementBounding.right - 
+                tooltipBounding.width + (elementBounding.width < deltaOffsetBeforeElement * 2 ? deltaOffsetBeforeElement - elementBounding.width / 2 : 0));
             }
         }
     
@@ -265,8 +270,8 @@ class Tooltip {
       const rightSpace = window.innerWidth - (elementBounding.right + (this.settings.margin || 0));
   
       return {
-        start: leftSpace > this.tooltip.offsetWidth,
-        end: rightSpace > this.tooltip.offsetWidth
+        start: leftSpace > this.tooltip.offsetWidth / 2,
+        end: rightSpace > this.tooltip.offsetWidth / 2
       };
     }
 
