@@ -141,7 +141,6 @@ class Tooltip {
         const elementRect = this.targetElement.getBoundingClientRect();
         const desiredPosition = this.getDesiredPosition(this.targetElement);
         const possibleSides = this.getPossibleSides(elementRect);
-        console.log("possibleSides", possibleSides)
         const actualPosition = desiredPosition && possibleSides ? this.getActualPosition(desiredPosition, possibleSides) : undefined;
         const coordinates = this.calcCoordinates(elementRect, actualPosition);
     
