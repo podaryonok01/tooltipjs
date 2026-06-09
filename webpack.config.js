@@ -12,7 +12,7 @@ module.exports = {
     library: { type: "umd", name: "tooltipjs"},
     filename: "index.js"
   },
-  devtool: release ? undefined : "eval",
+  devtool: release ? undefined : "source-map",
   mode: release ? "production" : "development",
   module: {
     rules: [
@@ -21,7 +21,7 @@ module.exports = {
         exclude: /\.useable\.scss/,
         use: [
           { loader: "style-loader" },
-          { loader: "css-loader" },
+          { loader: "css-loader", options: { esModule: false } },
           { loader: "sass-loader" }
         ]
       },
