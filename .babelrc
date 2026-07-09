@@ -4,18 +4,12 @@
         "@babel/env",
         {
           "targets": {
-            "firefox": "40",
-            "chrome": "17",
-            "ie": "11"
+            "chrome": "63"
           }
         }
       ],
       ["@babel/preset-typescript", {
         "allExtensions": true
       }]
-    ],
-    "plugins": [
-      "@babel/proposal-class-properties",
-      "@babel/proposal-object-rest-spread"
     ]
   }

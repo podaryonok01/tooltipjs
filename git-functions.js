@@ -1,6 +1,6 @@
-const childProcess = require("child_process");
+import childProcess from "child_process";
 
-module.exports.isReleaseVersion = () => {
+export const isReleaseVersion = () => {
     const bname = childProcess
         .execSync("git symbolic-ref -q HEAD")
         .toString()
