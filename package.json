@@ -3,7 +3,6 @@
   "version": "1.1.0",
   "description": "",
   "type": "module",
-  "main": "dist/index.cjs.js",
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "exports": {
@@ -55,8 +54,6 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-tsconfig-paths": "^1.5.2",
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-typescript": "^12.1.4",
     "rollup-plugin-typescript-paths": "^1.5.0",
     "@babel/core": "7.18.5",
     "@babel/plugin-proposal-class-properties": "7.17.12",
