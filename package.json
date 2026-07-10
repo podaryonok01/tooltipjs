@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "pnpm run build:parallel",
+    "build": "pnpm run clean && npm run build:js && pnpm run build:types",
     "clean": "rimraf lib",
     "build:parallel": "pnpm run clean && concurrently 'pnpm run build:js' 'pnpm run build:types'",
     "build:types": "tsc --emitDeclarationOnly",
