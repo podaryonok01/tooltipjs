@@ -69,6 +69,27 @@ class Tooltip {
 
     private onMouseMove = (event: MouseEvent | {target: HTMLElement}) => {
         const el = event.target as HTMLElement;
+
+        // Для старых браузеров, так как mouseleave не срабатывает для disabled элементов
+        if (this.targetElement && 'clientX' in event) {
+            const rect = this.targetElement.getBoundingClientRect();
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            // Если координаты мыши вышли за пределы прямоугольника текущего элемента
+            if (
+                mouseX < rect.left || 
+                mouseX > rect.right || 
+                mouseY < rect.top || 
+                mouseY > rect.bottom
+            ) {
+                // Мышь ушла, но в старом браузере на disabled кнопке mouseleave не вызвался.
+                // Вызываем скрытие вручную.
+                this.onHideTooltip(); 
+            }
+        }
+        
+
         if(isNotEmptyAttr(el,"title") || isNotEmptyAttr(el,"data-tooltip")){
             // отписка для предыдущего targetElement
             this.targetElement?.removeEventListener("mouseenter", this.onMouseEnterTargetElement)
